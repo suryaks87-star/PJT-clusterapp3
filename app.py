@@ -16,7 +16,68 @@ scaler = pickle.load(open('scaler2.pkl', 'rb'))
 model = pickle.load(open('kmeans2.pkl', 'rb'))
 
 st.title("🌍 Country Clustering App")
+import streamlit as st
+import pandas as pd
+import numpy as np
+import pickle
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
 
+st.title("🌍 Country Clustering App (All-in-One)")
+
+# =========================
+# STEP 1: Load Dataset
+# =========================
+# Change file name if needed
+df = pd.read_excel("World_development_mesurement.xlsx")
+
+# Select only 3 features
+features = ['GDP', 'Birth Rate', 'CO2 Emissions']
+df = df[features].dropna()
+
+st.write("### Sample Data", df.head())
+
+# =========================
+# STEP 2: Train Model
+# =========================
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(df)
+
+kmeans = KMeans(n_clusters=3, random_state=42)
+kmeans.fit(X_scaled)
+
+# =========================
+# STEP 3: Save Model
+# =========================
+with open('scaler2.pkl', 'wb') as f:
+    pickle.dump(scaler, f)
+
+with open('kmeans2.pkl', 'wb') as f:
+    pickle.dump(kmeans, f)
+
+st.success("Model trained and saved successfully!")
+
+# =========================
+# STEP 4: User Input
+# =========================
+st.write("### Enter New Data")
+
+gdp = st.number_input("GDP", value=10000.0)
+birth_rate = st.number_input("Birth Rate", value=20.0)
+co2 = st.number_input("CO2 Emissions", value=5.0)
+
+# =========================
+# STEP 5: Prediction
+# =========================
+if st.button("Predict Cluster"):
+
+    input_data = np.array([[gdp, birth_rate, co2]])
+
+    scaled_data = scaler.transform(input_data)
+
+    cluster = kmeans.predict(scaled_data)
+
+    st.success(f"Predicted Cluster: {cluster[0]}")
 st.write("Enter the details below:")
 
 # User Inputs
